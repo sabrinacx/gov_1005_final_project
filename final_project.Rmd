@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(lubridate)
+library(base)
 
 download.file(url = "https://raw.githubusercontent.com/fivethirtyeight/uber-tlc-foil-response/master/uber-trip-data/uber-raw-data-apr14.csv", destfile = "apr_14.csv", mode = "wb")
 
@@ -22,6 +24,35 @@ fs::file_delete(c("apr_14.csv", "jan_feb15.csv"))
 ```
 
 ```{r}
+jan_feb15  %>%  
+  mutate(base_name = case_when(dispatching_base_number == "B02512" ~ "Unter",
+                               dispatching_base_number == "B02598" ~	"Hinter",
+                               dispatching_base_number == "B02617" ~ "Weiter",
+                               dispatching_base_number == "B02682" ~	"Schmecken",
+                               dispatching_base_number == "B02764" ~	"Danach-NY",
+                               dispatching_base_number == "B02765" ~	"Grun",
+                               dispatching_base_number == "B02835" ~	"Dreist",
+                               dispatching_base_number == "B02836" ~	"Drinnen")) %>%
+  mutate(date = toString(date), 
+         date = as.Date(jan_feb15$date, "%m/%d/%Y")) %>% 
+  mutate(day = wday(date, label = TRUE),
+         month = month(date)) %>% 
+  group_by(day) %>% 
+  summarize(trip_t = sum(trips),
+            vehicle_t = sum(active_vehicles),
+            avgtrip_day = mean(trips)) %>% 
+  ungroup %>% 
+  ggplot(aes(x =))
 
+  
+  
+  
 ```
+
+
+
+
+
+
+
 
