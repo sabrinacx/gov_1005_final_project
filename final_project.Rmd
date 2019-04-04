@@ -1,0 +1,27 @@
+---
+title: "final_proj"
+author: "Sabrina Chok"
+date: "4/4/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+download.file(url = "https://raw.githubusercontent.com/fivethirtyeight/uber-tlc-foil-response/master/uber-trip-data/uber-raw-data-apr14.csv", destfile = "apr_14.csv", mode = "wb")
+
+apr14 <- read.csv("apr_14.csv")
+
+download.file(url = "https://raw.githubusercontent.com/fivethirtyeight/uber-tlc-foil-response/master/Uber-Jan-Feb-FOIL.csv", destfile = "jan_feb15.csv", mode = "wb")
+
+jan_feb15 <- read.csv("jan_feb15.csv")
+
+fs::file_delete(c("apr_14.csv", "jan_feb15.csv"))
+```
+
+```{r}
+
+```
+
