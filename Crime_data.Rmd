@@ -5,7 +5,30 @@ date: "4/5/2019"
 output: html_document
 ---
 
+Data: FBI: UCR Crime Data
+For my final project, I hope to create informative graphics utilizing US crime data that compares crime data rates from different states, regions, and years (since 2010). I'm particularly interested in creating an interactive tool that would enable people to look at various types of crime data (violent crimes, property crimes, etc). As of right now, I've only created a graphic that looks at violent crime data, but I hope to do more animated graphics moving forward!
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+
+c16 <- read.csv(file = "crime2016.csv") 
+```
+
+```{r echo = FALSE}
+
+c16 %>% 
+  filter(Year == "2016",
+         !is.na(Area)) %>% 
+  select(Area, Violent.crime.Rate.per..100.000) %>% 
+  mutate(Violent.crime.Rate.per..100.000 = as.numeric(Violent.crime.Rate.per..100.000)) %>% 
+  arrange(desc(Violent.crime.Rate.per..100.000)) %>% slice(1:10) %>% 
+  ggplot(mapping = aes(x = reorder(Area, Violent.crime.Rate.per..100.000), y = Violent.crime.Rate.per..100.000)) + geom_point() + coord_flip() +
+  labs(y = "Violent Crime Rate Per 100,000", 
+       x = "States",
+       title = "States with the Top 10 Violent Crime Rates in 2016",
+       caption = "US FBI:UCR Crime Data 2016")
 ```
 
