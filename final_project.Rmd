@@ -20,7 +20,12 @@ download.file(url = "https://raw.githubusercontent.com/fivethirtyeight/uber-tlc-
 
 jan_feb15 <- read.csv("jan_feb15.csv")
 
-fs::file_delete(c("apr_14.csv", "jan_feb15.csv"))
+download.file(url = "https://raw.githubusercontent.com/fivethirtyeight/uber-tlc-foil-response/master/other-FHV-data/Lyft_B02510.csv", destfile = "lyft.csv", mode = "wb")
+
+lyft <- read.csv("lyft.csv")
+
+fs::file_delete(c("apr_14.csv", "jan_feb15.csv", "lyft.csv"))
+
 ```
 
 ```{r}
