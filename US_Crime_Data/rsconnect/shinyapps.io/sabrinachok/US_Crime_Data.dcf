@@ -1,0 +1,12 @@
+name: US_Crime_Data
+title: US_Crime_Data
+username:
+account: sabrinachok
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 891927
+bundleId: 2040273
+url: https://sabrinachok.shinyapps.io/US_Crime_Data/
+when: 1556247521.3931
+asMultiple: FALSE
+asStatic: FALSE
