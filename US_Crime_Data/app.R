@@ -4,21 +4,30 @@ library(janitor)
 library(ggthemes)
 library(readxl)
 library(tools)
-# library(maps)
-# us_states <- map_data("state")
+
+# read in the rds that contains the crime data from script.R
+# crime1.rds contains all data (regional and state-specific data)
+# crime1_only_states contains only state-specific data
 
 all <- read_rds("crime1.rds")
 all_states <- read_rds("crime1_only_states.rds")
 
-# Define UI for application that draws a histogram
+# Define UI for application with four tabs
+
 ui <- fluidPage(
   
   # Application title
-  titlePanel("United States Crime Data"),
+  
+  titlePanel("United States Federal Crime Data"),
+  
+  # Tab one allows users to compare the crime rates between states and regions on a generated line graph
   
   tabsetPanel(
     tabPanel("State Comparisons", fluid = TRUE,
-             # Sidebar with a slider input for number of bins 
+             
+             # Sidebar that enables user to select the crime type, areas, years, and regions they'd like to 
+             # see on the line graph. 
+             
              sidebarLayout(
                sidebarPanel(
                  selectInput("crime_type", "Crime Type:",
@@ -38,13 +47,21 @@ ui <- fluidPage(
                                                            "South", "Northeast", "Midwest", 
                                                            "West", "Pacific"), selected = "United States Total")),
                
-               # Show a plot of the generated distribution
+               # Main panel shows a plot of the generated line plot
+               
                mainPanel(
                  plotOutput("linePlot")
                )
              )
     ),
+    
+    # Tab two allows the user to compare crime rates across the US at a specific year on a bar plot
+    
     tabPanel("Top 10", fluid = TRUE,
+             
+             # Sidebar layout enables the user to choose the crime type and year they'd like to examine
+             # Users can also choose how many states they'd like to look at.
+             
              sidebarLayout(
                sidebarPanel(
                  selectInput("crime_type2", "Crime Type:",
@@ -61,59 +78,89 @@ ui <- fluidPage(
                               #c("2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")),
                  sliderInput("slice", "Top:", value = 10, min = 1, max = 25)),
                
+               # Main panel shows a plot of the generated bar plot
+               
                mainPanel(
                  plotOutput("barPlot")
                )
              )
     ),
+    
+    # Tab three shows an animated graphic that shows the change in states with the highest violent crime rates in the US
+    
     tabPanel("Top 10 Violent Crime States", fluid = TRUE,
              sidebarLayout(
+               
+               # Sidebar panel shows a description of the graphic
+               
                sidebarPanel(
                tags$h5(helpText("This is an animated graphic that shows the states with the highest
                                 violent crime rates in the United States from 2010 to 2017."))),
-             mainPanel(
+               
+               # Main panel shows the generated gif
+               
+               mainPanel(
                imageOutput("violent_gif")
              ))),
+    
+    # Tab four includes basic information about the project
+    
     tabPanel("About", fluid = TRUE, 
              textOutput("about"))))
 
-# Define server logic required to draw a histogram
+# Define server logic required to generate the various graphics in the four tabs
+
 server <- function(input, output) {
   
+  # Generates the line graph for tab one based on inputs from ui
+  
   output$linePlot <- renderPlot({
-    # generate bins based on input$bins from ui.R
+    
+    # Prepares data table for line graph by filtering out the user-selected areas, crime types and years 
+    
     all %>%
       filter(area %in% c(input$area1, input$area2, input$area3),
              crime_type == input$crime_type,
              year >= input$year[1] & year <= input$year[2]) %>%
       
-      # draw the histogram with the specified number of bins
+      # Draw the line graph with the filtered data set 
       
       ggplot(aes(x = year, y = value, color = area)) + geom_line() + xlab("Year") + ylab("Rate Per 100,000") + theme_minimal()
   })
   
+  # Generates the bar graph for tab two based on inputs from ui
+  
   output$barPlot <- renderPlot({
-    # generate bins based on input$bins from ui.R
+    
+    # Prepares data table for bar graph by filtering out the user-selected year and crime type 
+    
     all_states %>% 
       filter(year == input$year2,
              crime_type == input$crime_type2) %>% 
       arrange(desc(value)) %>% 
       slice(1:input$slice) %>% 
+      
+      # Draw the bar plot with the filtered data set and add relevant title
+      
       ggplot(mapping = aes(x = reorder(area, value), y = value, fill = area)) + geom_col(show.legend = FALSE) + coord_flip() +
       labs(y = "Violent Crime Rate Per 100,000", 
            x = "States",
            title = "States with the Top 10 Highest Violent Crime Rates in",
-           caption = "Source: US FBI:UCR Crime Data 2016") + 
+           caption = "Source: US FBI:UCR Crime Data") + 
       theme_economist_white()
   })
   
+  # Generates the gif that contains the animated bar graph for tab three 
+  
   output$violent_gif <- renderImage({
+    
+    # Pulls the premade gif from the shiny directory
+    
     list(src = "violent.gif",
          contentType = 'image/gif'
-         # width = 400,
-         # height = 300,
-         # alt = "This is alternate text"
     )}, deleteFile = FALSE)
+  
+  # Generates text for tab four
   
   output$about <- renderText("This project visualizes US Crime Data from US Federal Bureau of Investigation : Uniform Crime Reports Data.
                     My code can be found at https://github.com/sabrinacx/gov_1005_final_project. ")
