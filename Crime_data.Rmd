@@ -13,22 +13,158 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(janitor)
+library(ggthemes)
+library(readxl)
+library(maps)
+library(gganimate)
 
-c16 <- read.csv(file = "crime2016.csv") 
 ```
+
+
+```{r}
+us_states <- map_data("state")
+
+c10_11 <- read_xls("crime_2010_2011.xls") %>% 
+  clean_names() 
+
+c12_13 <- read_xls("crime_2012_2013.xls") %>% 
+  clean_names() 
+
+c14_15 <- read_xls("crime_2014_2015.xls") %>% 
+  clean_names() 
+
+c16_17 <- read_xls("crime2016.xls") %>% 
+  clean_names() 
+
+
+all <- bind_rows(c10_11, c12_13, c14_15, c16_17, .id = "dataset") %>% 
+  gather(crime_type, value, c(violent_crime:rape_revised_definition_rate_per_100_000))
+
+all_states <- all %>% filter(!area %in% c("United States Total", "Northeast", "New England", "Middle Atlantic", "Midwest", 
+                                          "East North Central", "West North Central", "South", "South Atlantic", "East South Central",
+                                          "West South Central", "West", "Mountain", "Pacific"))
+```
+
+```{r}
+
+  top_ten <-  all_states %>% 
+      filter(year == 2010,
+        crime_type == "violent_crime_rate_per_100_000") %>% 
+      arrange(desc(value)) %>% 
+      slice(1:10) %>% 
+      select(area) %>% 
+  pull()
+         
+
+all_states_formatted <- all_states %>%
+  filter(!is.na(area),
+         crime_type == "violent_crime_rate_per_100_000") %>% 
+  group_by(year) %>%
+  # The * 1 makes it possible to have non-integer ranks while sliding
+  mutate(rank = rank(-value),
+         Value_rel = value/value[rank==1],
+         Value_lbl = paste0(" ",round(value/1e9))) %>%
+  group_by(area) %>% 
+  filter(rank <=10) %>%
+  ungroup()
+
+all_states_formatted %>% 
+ggplot(aes(rank, group = area, 
+                fill = as.factor(area), color = as.factor(area))) +
+  geom_tile(aes(y = value/2,
+                height = value,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(area, " ")), vjust = 0.2, hjust = 1) +
+  geom_text(aes(y = value,label = value, hjust=0)) +
+  coord_flip(clip = "off", expand = FALSE) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+         axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major.x = element_line( size=.1, color="grey" ),
+        panel.grid.minor.x = element_line( size=.1, color="grey" ),
+        plot.title=element_text(size=25, hjust=0.5, face="bold", colour="grey", vjust=-1),
+        plot.subtitle=element_text(size=18, hjust=0.5, face="italic", color="grey"),
+        plot.caption =element_text(size=8, hjust=0.5, face="italic", color="grey"),
+        plot.background=element_blank(),
+       plot.margin = margin(2,2, 2, 4, "cm")) + 
+        transition_states(year, transition_length = 4, state_length = 4) +
+       view_follow(fixed_x = TRUE)  +
+  labs(title = 'Violent Crime Rates per Year : {closest_state}',  
+       subtitle  =  "Top 10 States",
+       caption  = "")
+  
+```
+
+
+```{r}
+all %>% 
+  filter(area %in% c("Northeast", "United States Total", "Middle Atlantic", "Midwest", "East North Central", "West North Central", "South")) %>% 
+  select(area, year, violent_crime_rate_per_100_000) %>% 
+  ggplot(aes(x = year, y = violent_crime_rate_per_100_000, color = area)) + geom_line() +
+  xlab("Year")
+```
+
+```{r}
+all %>% 
+       filter(year == 2010) %>% 
+       select(area, burglary_rate_per_100_000) %>% 
+       gather(crime_type, value, burglary_rate_per_100_000) %>% 
+       arrange(desc(value)) %>% 
+       slice(1:10) 
+```
+
+```{r}
+all %>%
+       filter(area == "New York") %>%
+       select(area, year, violent_crime_rate_per_100_000) %>% 
+      gather(crime_type, y, violent_crime_rate_per_100_000)
+```
+
+```{r}
+
+x <- all %>% 
+  filter(year == "2012") %>% 
+  mutate(region = tolower(area)) %>% 
+  select(-year, -dataset, -population) 
+
+y <- left_join(us_states, x)
+
+ggplot(data = y, mapping = aes(x = long, y = lat, group = group, fill = murder_and_nonnegligent_manslaughter_rate_per_100_000)) + geom_polygon()
+```
+
+```{r}
+c14_15 %>% 
+  filter(year == "2014") %>% 
+  select(area, year, violent_crime_rate_per_100_000) %>% 
+  ggplot(aes(x = year, y = violent_crime_rate_per_100_000)) + geom_jitter() 
+```
+
 
 ```{r echo = FALSE}
 
-c16 %>% 
-  filter(Year == "2016",
-         !is.na(Area)) %>% 
-  select(Area, Violent.crime.Rate.per..100.000) %>% 
-  mutate(Violent.crime.Rate.per..100.000 = as.numeric(Violent.crime.Rate.per..100.000)) %>% 
-  arrange(desc(Violent.crime.Rate.per..100.000)) %>% slice(1:10) %>% 
-  ggplot(mapping = aes(x = reorder(Area, Violent.crime.Rate.per..100.000), y = Violent.crime.Rate.per..100.000)) + geom_point() + coord_flip() +
+c16_17 %>% 
+  filter(year == "2016",
+         !is.na(area)) %>% 
+  select(area, violent_crime_rate_per_100_000) %>% 
+  mutate(violent_crime_rate_per_100_000 = as.numeric(violent_crime_rate_per_100_000)) %>% 
+  arrange(desc(violent_crime_rate_per_100_000)) %>% 
+  #slice(1:10) %>% 
+  ggplot(mapping = aes(x = reorder(area, violent_crime_rate_per_100_000), y = violent_crime_rate_per_100_000)) + geom_point() + coord_flip() +
   labs(y = "Violent Crime Rate Per 100,000", 
        x = "States",
-       title = "States with the Top 10 Violent Crime Rates in 2016",
-       caption = "US FBI:UCR Crime Data 2016")
+       title = "States with the Top 10 Violent Crime Rates in",
+       caption = "Source: US FBI:UCR Crime Data 2016") + 
+  theme_economist_white()
 ```
 

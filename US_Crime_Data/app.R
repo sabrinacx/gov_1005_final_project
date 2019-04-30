@@ -57,14 +57,25 @@ ui <- fluidPage(
                                "Larceny Theft" = "larceny_theft_rate_per_100_000",
                                "Motor Vehicle Theft" = "motor_vehicle_theft_rate_per_100_000"),
                              "Violent Crime"),
-                 selectInput("year2", "Year:", c("2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")),
+                 numericInput("year2", "Year:", value = 2017, min = 2010, max = 2017), 
+                              #c("2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")),
                  sliderInput("slice", "Top:", value = 10, min = 1, max = 25)),
                
                mainPanel(
-                 plotOutput("dotPlot")
+                 plotOutput("barPlot")
                )
              )
-    )))
+    ),
+    tabPanel("Top 10 Violent Crime States", fluid = TRUE,
+             sidebarLayout(
+               sidebarPanel(
+               tags$h5(helpText("This is an animated graphic that shows the states with the highest
+                                violent crime rates in the United States from 2010 to 2017."))),
+             mainPanel(
+               imageOutput("violent_gif")
+             ))),
+    tabPanel("About", fluid = TRUE, 
+             textOutput("about"))))
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -81,7 +92,7 @@ server <- function(input, output) {
       ggplot(aes(x = year, y = value, color = area)) + geom_line() + xlab("Year") + ylab("Rate Per 100,000") + theme_minimal()
   })
   
-  output$dotPlot <- renderPlot({
+  output$barPlot <- renderPlot({
     # generate bins based on input$bins from ui.R
     all_states %>% 
       filter(year == input$year2,
@@ -95,6 +106,17 @@ server <- function(input, output) {
            caption = "Source: US FBI:UCR Crime Data 2016") + 
       theme_economist_white()
   })
+  
+  output$violent_gif <- renderImage({
+    list(src = "violent.gif",
+         contentType = 'image/gif'
+         # width = 400,
+         # height = 300,
+         # alt = "This is alternate text"
+    )}, deleteFile = FALSE)
+  
+  output$about <- renderText("This project visualizes US Crime Data from US Federal Bureau of Investigation : Uniform Crime Reports Data.
+                    My code can be found at https://github.com/sabrinacx/gov_1005_final_project. ")
 }
 
 # Run the application 
