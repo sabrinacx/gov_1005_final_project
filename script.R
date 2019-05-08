@@ -2,6 +2,7 @@ library(tidyverse)
 library(janitor)
 library(readxl)
 library(maps)
+library(gganimate)
 us_states <- map_data("state")
 
 c10_11 <- read_xls("crime_2010_2011.xls") %>% 
@@ -36,18 +37,20 @@ all_states_formatted <- all_states %>%
          Value_lbl = paste0(" ",round(value/1e9))) %>%
   group_by(area) %>% 
   filter(rank <=10) %>%
-  ungroup()
+  ungroup() %>% 
+  mutate(value = as.integer(value))
 
-violent_gif <- all_states_formatted %>% 
+violent_gif <- 
+  all_states_formatted %>% 
   ggplot(aes(rank, group = area, 
              fill = as.factor(area), color = as.factor(area))) +
-  geom_tile(aes(y = value/2,
+  geom_tile(aes(y = as.integer(value/2),
                 height = value,
                 width = 0.9), alpha = 0.8, color = NA) +
   geom_text(aes(y = 0, label = paste(area, " ")), vjust = 0.2, hjust = 1) +
-  geom_text(aes(y = value,label = value, hjust=0)) +
+  geom_text(aes(y = value, label = as.character(value), hjust=0)) +
   coord_flip(clip = "off", expand = FALSE) +
-  scale_y_continuous(labels = scales::comma) +
+  #scale_y_continuous(labels = scales::comma) +
   scale_x_reverse() +
   guides(color = FALSE, fill = FALSE) +
   theme(axis.line=element_blank(),

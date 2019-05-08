@@ -174,11 +174,12 @@ server <- function(input, output) {
     all %>%
       filter(area %in% c(input$area1, input$area2, input$area3),
              crime_type == input$crime_type,
-             year >= input$year[1] & year <= input$year[2]) %>%
+             year >= input$year[1] & year <= input$year[2]) %>% 
+      rename(Area = area) %>% 
       
       # Draw the line graph with the filtered data set 
       
-      ggplot(aes(x = year, y = value, color = area)) + geom_line() + xlab("Year") + ylab("Rate Per 100,000") + theme_fivethirtyeight()
+      ggplot(aes(x = year, y = value, color = Area)) + geom_line() + xlab("Year") + theme_fivethirtyeight() + ylab("Rate Per 100,000")
   })
   
   # Generates the bar graph for tab two based on inputs from ui
@@ -196,9 +197,9 @@ server <- function(input, output) {
       # Draw the bar plot with the filtered data set and add relevant title
       
       ggplot(mapping = aes(x = reorder(area, value), y = value, fill = area)) + geom_col(show.legend = FALSE) + coord_flip() +
-      labs(y = "Violent Crime Rate Per 100,000", 
+      labs(y = "Violent Crime Rate Per 100,000 (%)", 
            x = "States",
-           title = "States with the Top 10 Highest Violent Crime Rates in",
+           title = "States with the Highest Violent Crime Rates",
            caption = "Source: US FBI:UCR Crime Data") + 
       theme_economist_white()
   })
@@ -216,9 +217,9 @@ server <- function(input, output) {
       # Draw the bar plot with the filtered data set and add relevant title
       
       ggplot(mapping = aes(x = reorder(area, -value), y = value, fill = area)) + geom_col(show.legend = FALSE) + coord_flip() +
-      labs(y = "Violent Crime Rate Per 100,000", 
+      labs(y = "Violent Crime Rate Per 100,000 (%)", 
            x = "States",
-           title = "States with the Top 10 Highest Violent Crime Rates in",
+           title = "States with the Lowest Violent Crime Rates",
            caption = "Source: US FBI:UCR Crime Data") + 
       theme_economist_white()
   })
