@@ -4,6 +4,7 @@ library(janitor)
 library(ggthemes)
 library(readxl)
 library(tools)
+library(shinythemes)
 
 # read in the rds that contains the crime data from script.R
 # crime1.rds contains all data (regional and state-specific data)
@@ -14,16 +15,14 @@ all_states <- read_rds("crime1_only_states.rds")
 
 # Define UI for application with four tabs
 
-ui <- fluidPage(
+ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"),
   
-  # Application title
-  
-  titlePanel("United States Federal Crime Data"),
+  tabPanel("State Comparisons",
+           fluidPage(
+             titlePanel("State Comparisons"),
   
   # Tab one allows users to compare the crime rates between states and regions on a generated line graph
-  
-  tabsetPanel(
-    tabPanel("State Comparisons", fluid = TRUE,
+
              
              # Sidebar that enables user to select the crime type, areas, years, and regions they'd like to 
              # see on the line graph. 
@@ -45,19 +44,23 @@ ui <- fluidPage(
                  sliderInput("year", "Year:", min = 2010, max = 2017, value = c(2010, 2017), sep = ""),
                  checkboxGroupInput("area3", "Regions:", c("United States" = "United States Total",
                                                            "South", "Northeast", "Midwest", 
-                                                           "West", "Pacific"), selected = "United States Total")),
+                                                           "West", "Pacific"), selected = "United States Total")
+                 ),
                
                # Main panel shows a plot of the generated line plot
                
                mainPanel(
                  plotOutput("linePlot")
+                 )
                )
              )
-    ),
+           ),
     
     # Tab two allows the user to compare crime rates across the US at a specific year on a bar plot
     
-    tabPanel("Top 10", fluid = TRUE,
+  tabPanel("Annual Comparisons", 
+           fluidPage(
+             titlePanel("Annual Comparisons"),
              
              # Sidebar layout enables the user to choose the crime type and year they'd like to examine
              # Users can also choose how many states they'd like to look at.
@@ -82,13 +85,16 @@ ui <- fluidPage(
                
                mainPanel(
                  plotOutput("barPlot")
+                 )
                )
              )
-    ),
+           ),
     
     # Tab three shows an animated graphic that shows the change in states with the highest violent crime rates in the US
     
-    tabPanel("Top 10 Violent Crime States", fluid = TRUE,
+    tabPanel("Top 10 Highest Violent Crime States", 
+             fluidPage(
+             titlePanel("Top 10 Highest Violent Crime States"),
              sidebarLayout(
                
                # Sidebar panel shows a description of the graphic
@@ -101,12 +107,34 @@ ui <- fluidPage(
                
                mainPanel(
                imageOutput("violent_gif")
-             ))),
+               )
+               )
+             )),
     
     # Tab four includes basic information about the project
     
-    tabPanel("About", fluid = TRUE, 
-             textOutput("about"))))
+    tabPanel("About", 
+             fluidPage(
+               titlePanel("About"),
+
+             br(),
+
+             p(paste("Definitions:")),
+
+             br(),
+
+             br(),
+
+             p(paste("This project couldn't have been possible without the data provided by the US Federal
+                     Bureau of Investigation : Uniform Crime Reports Data. Data can be accessed from their website: https://www.fbi.gov/services/cjis/ucr")),
+
+             br(),
+
+             p(paste("My code can be found here: https://github.com/sabrinacx/us_crime_data")),
+
+             br()
+
+             )))
 
 # Define server logic required to generate the various graphics in the four tabs
 
@@ -125,7 +153,7 @@ server <- function(input, output) {
       
       # Draw the line graph with the filtered data set 
       
-      ggplot(aes(x = year, y = value, color = area)) + geom_line() + xlab("Year") + ylab("Rate Per 100,000") + theme_minimal()
+      ggplot(aes(x = year, y = value, color = area)) + geom_line() + xlab("Year") + ylab("Rate Per 100,000") + theme_fivethirtyeight()
   })
   
   # Generates the bar graph for tab two based on inputs from ui
