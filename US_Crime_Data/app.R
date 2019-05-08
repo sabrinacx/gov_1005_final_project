@@ -50,7 +50,7 @@ ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"
                # Main panel shows a plot of the generated line plot
                
                mainPanel(
-                 plotOutput("linePlot")
+                 plotOutput("states_line_plot")
                  )
                )
              )
@@ -60,7 +60,8 @@ ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"
     
   tabPanel("Annual Comparisons", 
            fluidPage(
-             titlePanel("Annual Comparisons"),
+             tabsetPanel(
+             tabPanel("States with Highest Rates",
              
              # Sidebar layout enables the user to choose the crime type and year they'd like to examine
              # Users can also choose how many states they'd like to look at.
@@ -84,11 +85,35 @@ ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"
                # Main panel shows a plot of the generated bar plot
                
                mainPanel(
-                 plotOutput("barPlot")
+                 plotOutput("highest_bar_plot")
                  )
                )
-             )
-           ),
+             ),
+             tabPanel("States with Lowest Rates",
+                      sidebarLayout(
+                        sidebarPanel(
+                          selectInput("crime_type3", "Crime Type:",
+                                      c("Violent Crime" = "violent_crime_rate_per_100_000",
+                                        "Murder and Non-Negligent Manslaughter" = "murder_and_nonnegligent_manslaughter_rate_per_100_000",
+                                        "Robbery" = "robbery_rate_per_100_000",
+                                        "Aggravated Assault" = "aggravated_assault_rate_per_100_000",
+                                        "Property Crime" = "property_crime_rate_per_100_000",
+                                        "Burglary" = "burglary_rate_per_100_000",
+                                        "Larceny Theft" = "larceny_theft_rate_per_100_000",
+                                        "Motor Vehicle Theft" = "motor_vehicle_theft_rate_per_100_000"),
+                                      "Violent Crime"),
+                          numericInput("year3", "Year:", value = 2017, min = 2010, max = 2017), 
+                          #c("2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")),
+                          sliderInput("slice3", "Top:", value = 10, min = 1, max = 25)),
+                        
+                        # Main panel shows a plot of the generated bar plot
+                        
+                        mainPanel(
+                          plotOutput("lowest_bar_plot")
+                        )
+                      )
+                      )
+           ))),
     
     # Tab three shows an animated graphic that shows the change in states with the highest violent crime rates in the US
     
@@ -142,7 +167,7 @@ server <- function(input, output) {
   
   # Generates the line graph for tab one based on inputs from ui
   
-  output$linePlot <- renderPlot({
+  output$states_line_plot <- renderPlot({
     
     # Prepares data table for line graph by filtering out the user-selected areas, crime types and years 
     
@@ -158,7 +183,7 @@ server <- function(input, output) {
   
   # Generates the bar graph for tab two based on inputs from ui
   
-  output$barPlot <- renderPlot({
+  output$highest_bar_plot <- renderPlot({
     
     # Prepares data table for bar graph by filtering out the user-selected year and crime type 
     
@@ -171,6 +196,26 @@ server <- function(input, output) {
       # Draw the bar plot with the filtered data set and add relevant title
       
       ggplot(mapping = aes(x = reorder(area, value), y = value, fill = area)) + geom_col(show.legend = FALSE) + coord_flip() +
+      labs(y = "Violent Crime Rate Per 100,000", 
+           x = "States",
+           title = "States with the Top 10 Highest Violent Crime Rates in",
+           caption = "Source: US FBI:UCR Crime Data") + 
+      theme_economist_white()
+  })
+  
+  output$lowest_bar_plot <- renderPlot({
+    
+    # Prepares data table for bar graph by filtering out the user-selected year and crime type 
+    
+    all_states %>% 
+      filter(year == input$year3,
+             crime_type == input$crime_type3) %>% 
+      arrange(value) %>% 
+      slice(1:input$slice3) %>% 
+      
+      # Draw the bar plot with the filtered data set and add relevant title
+      
+      ggplot(mapping = aes(x = reorder(area, -value), y = value, fill = area)) + geom_col(show.legend = FALSE) + coord_flip() +
       labs(y = "Violent Crime Rate Per 100,000", 
            x = "States",
            title = "States with the Top 10 Highest Violent Crime Rates in",
