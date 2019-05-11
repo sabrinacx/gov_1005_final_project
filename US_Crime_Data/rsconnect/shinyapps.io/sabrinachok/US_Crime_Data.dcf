@@ -5,8 +5,8 @@ account: sabrinachok
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 891927
-bundleId: 2048764
+bundleId: 2076498
 url: https://sabrinachok.shinyapps.io/US_Crime_Data/
-when: 1556602674.14321
+when: 1557542252.65326
 asMultiple: FALSE
 asStatic: FALSE

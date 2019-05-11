@@ -29,6 +29,8 @@ ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"
              
              sidebarLayout(
                sidebarPanel(
+                 h6("Violent crime rates have been declining for the past decade, but there are regional differences. 
+                    This line graph shows change in violent crime rates for selected areas from 2010 to 2017. Explore away!"),
                  selectInput("crime_type", "Crime Type:",
                              c("Violent Crime" = "violent_crime_rate_per_100_000",
                                "Murder and Non-Negligent Manslaughter" = "murder_and_nonnegligent_manslaughter_rate_per_100_000",
@@ -68,6 +70,8 @@ ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"
              
              sidebarLayout(
                sidebarPanel(
+                 h6("This bar graph shows a snapshot of rankings of states with highest violent crime rates by year. 
+                    Notice which states have consistently had the highest rates!"),
                  selectInput("crime_type2", "Crime Type:",
                              c("Violent Crime" = "violent_crime_rate_per_100_000",
                                "Murder and Non-Negligent Manslaughter" = "murder_and_nonnegligent_manslaughter_rate_per_100_000",
@@ -92,6 +96,8 @@ ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"
              tabPanel("States with Lowest Rates",
                       sidebarLayout(
                         sidebarPanel(
+                          h6("This bar graph shows a snapshot of rankings of states with lowest violent crime rates by year. 
+                    Notice which states have consistently had the lowest rates!"),
                           selectInput("crime_type3", "Crime Type:",
                                       c("Violent Crime" = "violent_crime_rate_per_100_000",
                                         "Murder and Non-Negligent Manslaughter" = "murder_and_nonnegligent_manslaughter_rate_per_100_000",
@@ -144,18 +150,19 @@ ui <- navbarPage("United States Federal Crime Data", theme = shinytheme("flatly"
 
              br(),
 
-             p(paste("Definitions:")),
+             p(paste("In the United States, the Federal Bureau of Investigation categorizes violent crimes as offenses which involve 
+                    force or threat of force. This project creates an interactive tool for users to better understand trends 
+                    of violent crimes rates of different states and regions and of the US as a whole.")),
+             
+             br(),
+
+             p(paste("I used data provided by the US Federal Bureau of Investigation : Uniform Crime Reports Data. 
+                     Data can be accessed from their website: https://www.fbi.gov/services/cjis/ucr")),
 
              br(),
 
-             br(),
-
-             p(paste("This project couldn't have been possible without the data provided by the US Federal
-                     Bureau of Investigation : Uniform Crime Reports Data. Data can be accessed from their website: https://www.fbi.gov/services/cjis/ucr")),
-
-             br(),
-
-             p(paste("My code can be found here: https://github.com/sabrinacx/us_crime_data")),
+             p(paste("My name is Sabrina Chok. I am a 3rd year at Harvard College studying East Asian Studies and Economics with
+                    a passion for data. My code can be found here: https://github.com/sabrinacx/us_crime_data")),
 
              br()
 
@@ -179,7 +186,8 @@ server <- function(input, output) {
       
       # Draw the line graph with the filtered data set 
       
-      ggplot(aes(x = year, y = value, color = Area)) + geom_line() + xlab("Year") + theme_fivethirtyeight() + ylab("Rate Per 100,000")
+      ggplot(aes(x = year, y = value, color = Area)) + geom_line() + xlab("Year") + theme_economist_white() +
+      ylab("Violent Crime Rates per 100,000 (%)")
   })
   
   # Generates the bar graph for tab two based on inputs from ui
